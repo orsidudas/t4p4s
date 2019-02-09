@@ -115,13 +115,19 @@ int read_config_from_file(char *filename) {
 
 char* fn;
 
-void init() {
+void init_file() {
     set_default_action_ipv4_lpm();
     if (read_config_from_file(fn)<0) {
          printf("File cannnot be opened...\n");
     }
 }
 
+void init_fake() {
+    uint8_t new_addr[6] = {0xd2, 0x69, 0x0f, 0xa8, 0x39, 0x9c};
+    uint8_t node_id = 9;
+
+    fill_ipv4_lpm_table(new_addr, node_id)
+}
 
 int main(int argc, char* argv[])
 {
@@ -130,9 +136,13 @@ int main(int argc, char* argv[])
                         printf("Too many arguments...\nUsage: %s <filename(optional)>\n", argv[0]);
                         return -1;
                 }
-                printf("Command line argument is present...\nLoading configuration data...\n");
-                fn=argv[1];
+          printf("Command line argument is present...\nLoading configuration data...\n");
+          fn=argv[1];
+	  c = create_controller_with_init(11111, 3, dhf, init_file);
+    	}else {
+	  c = create_controller_with_init(11111, 3, dhf, init_fake);
         }
+
 
         printf("Create and configure controller...\n");
         c = create_controller_with_init(11111, 3, dhf, init);
