@@ -492,6 +492,7 @@ if [ "$(optvalue p4)" != off ]; then
     verbosemsg "P4 compiler options: $(print_cmd_opts "${OPTS[p4opts]}")"
 
     IFS=" "
+    p4c-bm2-ss --p4v 16 --p4runtime-file ${OPTS[example]}.p4runtime --p4runtime-format text --toJSON ./build/.cache/${OPTS[example]}.p4.json  examples/${OPTS[example]}.p4
     $PYTHON -B src/compiler.py ${OPTS[p4opts]}
     exit_on_error "P4 to C compilation failed"
 fi
