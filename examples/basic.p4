@@ -33,7 +33,13 @@ header ipv4_t {
     bit<32> dstAddr;
 }
 
+struct routing_metadata_t {
+    bit<8> node_id;
+}
+
 struct metadata {
+    @name(".routing_metadata") 
+    routing_metadata_t routing_metadata;
 }
 
 struct headers {
@@ -58,6 +64,7 @@ parser MyParser(packet_in packet,
 
     state parse_ethernet {
         packet.extract(hdr.ethernet);
+	meta.routing_metadata.node_id=1;
         transition accept;
     }
 
@@ -88,7 +95,7 @@ control MyIngress(inout headers hdr,
     
     @name (".ipv4_lpm") table ipv4_lpm {
         key = {
-            hdr.ipv4.dstAddr: lpm;
+            meta.routing_metadata.node_id: exact;
         }
         actions = {
 	    nop;

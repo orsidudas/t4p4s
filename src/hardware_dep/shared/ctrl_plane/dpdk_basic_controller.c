@@ -37,17 +37,17 @@ void fill_ipv4_lpm_table(uint8_t new_addr[6], uint8_t node_id)
         strcpy(te->table_name, "ipv4_lpm");
 
         exact = add_p4_field_match_exact(te, 2048);
-        strcpy(exact->header.name, "ethernet.dstAddr");
+        strcpy(exact->header.name, "routing_metadata.node_id");
         memcpy(exact->bitmap, &node_id, 6);
-        exact->length = 6*8+0;
+        exact->length = 1*8+0;
 
         a = add_p4_action(h, 2048);
         strcpy(a->description.name, "forward");
 
         ap = add_p4_action_parameter(h, a, 2048);
         strcpy(ap->name, "new_addr");
-        memcpy(ap->bitmap, &new_addr, 1);
-        ap->length = 1*8+0;
+        memcpy(ap->bitmap, &new_addr, 6);
+        ap->length = 6*8+0;
 
         netconv_p4_header(h);
     	netconv_p4_add_table_entry(te);
