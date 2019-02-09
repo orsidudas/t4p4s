@@ -23,7 +23,7 @@
 
 controller c;
 
-void fill_ipv4_lpm_table(uint8_t port, uint8_t node_id)
+void fill_ipv4_lpm_table(uint8_t new_addr[6], uint8_t node_id)
 {
         char buffer[2048];
         struct p4_header* h;
@@ -38,7 +38,7 @@ void fill_ipv4_lpm_table(uint8_t port, uint8_t node_id)
 
         exact = add_p4_field_match_exact(te, 2048);
         strcpy(exact->header.name, "ethernet.dstAddr");
-        memcpy(exact->bitmap, mac, 6);
+        memcpy(exact->bitmap, &node_id, 6);
         exact->length = 6*8+0;
 
         a = add_p4_action(h, 2048);
@@ -51,11 +51,8 @@ void fill_ipv4_lpm_table(uint8_t port, uint8_t node_id)
 
         netconv_p4_header(h);
     	netconv_p4_add_table_entry(te);
-    	netconv_p4_field_match_lpm(lpm);
+    	netconv_p4_field_match_exact(exact);
     	netconv_p4_action(a);
-    	netconv_p4_action_parameter(ap1);
-    	netconv_p4_action_parameter(ap2);
-    	netconv_p4_action_parameter(ap3);
     	send_p4_msg(c, buffer, 2048);
 }
 
@@ -90,10 +87,7 @@ int read_config_from_file(char *filename) {
     FILE *f;
     char line[100];
         uint8_t new_addr[6];
-        uint8_t route1;
-        uint8_t route2;
         uint8_t node_id;
-        char dummy;
 
         printf("READING\n");
         f = fopen(filename, "r");
@@ -104,18 +98,10 @@ int read_config_from_file(char *filename) {
                 line[strlen(line)-1] = '\0';
                 line_index++;
                 printf("Sor: %hhd.\n",line_index);
-                if (10 == sscanf(line, "%c %hhx:%hhx:%hhx:%hhx:%hhx:%hhx %hhd %hhd %hhd",
-                                &dummy, &new_addr[0], &new_addr[1], &new_addr[2], &new_addr[3], &new_addr[4], &new_addr[5], &route1 , &route2, &node_id) )
+                if (10 == sscanf(line, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx %hhd",
+                                &new_addr[0], &new_addr[1], &new_addr[2], &new_addr[3], &new_addr[4], &new_addr[5], &node_id) )
                 {
-                    printf("new_addr: \n");
-                    for(int j = 0; j < 6; j++) {
-                        printf("%hhx ", new_addr[j]);
-                    }
-                    printf("\n");
-                    printf("filling Route1: %hhd  Route2: %hhd node_id: %hhd\n", route1 , route2, node_id);
-
-                    fill_ipv4_lpm_table(new_addr, route1, route2, node_id);
-                    printf("postfil\n");
+                    fill_ipv4_lpm_table(new_addr, node_id);
                 }
                 else {
                     printf("Wrong format error in line\n");
