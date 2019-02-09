@@ -17,18 +17,7 @@ fake_cmd_t t4p4s_testcase_test[][RTE_MAX_LCORE] = {
     },
 };
 
-fake_cmd_t t4p4s_testcase_bcast[][RTE_MAX_LCORE] = {
-    {
-        {FAKE_PKT, 0, 1, ETH("AAAAAAAAAAAA", "BBBBBBBBBBBB"), 200, T4P4S_BROADCAST_PORT, ETH("AAAAAAAAAAAA", "BBBBBBBBBBBB")},
-        FEND,
-    },
-    {
-        FEND,
-    },
-};
-
 testcase_t t4p4s_test_suite[MAX_TESTCASES] = {
-    { "bcast",          &t4p4s_testcase_bcast },
     { "test",           &t4p4s_testcase_test },
     TEST_SUITE_END,
 };
