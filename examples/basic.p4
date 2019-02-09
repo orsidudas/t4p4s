@@ -13,8 +13,8 @@ typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
 
 header ethernet_t {
-    macAddr_t dstAddr;
-    macAddr_t srcAddr;
+    bit<48> dstAddr;
+    bit<48> srcAddr;
     bit<32>   etherType;
 }
 
@@ -29,19 +29,18 @@ header ipv4_t {
     bit<8>    ttl;
     bit<8>    protocol;
     bit<16>   hdrChecksum;
-    ip4Addr_t srcAddr;
-    ip4Addr_t dstAddr;
+    bit<32> srcAddr;
+    bit<32> dstAddr;
 }
 
 struct metadata {
-    /* empty */
 }
 
 struct headers {
     @name(".ethernet")
-    ethernet_t   ethernet;
+    ethernet_t ethernet;
     @name(".ipv4")
-    ipv4_t       ipv4;
+    ipv4_t ipv4;
 }
 
 /*************************************************************************
@@ -83,7 +82,7 @@ control MyIngress(inout headers hdr,
     @name(".nop") action nop() {    
     }
     
-    @name(".forward") action forward(bit<48> new_addr, bit<8> route1, bit<8> route2) {
+    @name(".forward") action forward(bit<48> new_addr) {
 	hdr.ethernet.dstAddr = new_addr;
     }
     
@@ -92,17 +91,15 @@ control MyIngress(inout headers hdr,
             hdr.ipv4.dstAddr: lpm;
         }
         actions = {
+	    nop;
             forward;
-            nop;
         }
         size = 1024;
         default_action = nop();
     }
     
     apply {
-        if (hdr.ipv4.isValid()) {
-            ipv4_lpm.apply();
-        }
+        ipv4_lpm.apply();        
     }
 }
 
