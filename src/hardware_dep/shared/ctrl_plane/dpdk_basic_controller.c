@@ -36,14 +36,16 @@ void fill_ipv4_lpm_table(uint8_t new_addr[6], uint8_t node_id)
         te = create_p4_add_table_entry(buffer,0,2048);
         strcpy(te->table_name, "ipv4_lpm");
 
+	//mit csinaljon, ha 11-es, forwardoljon ---definicio
         exact = add_p4_field_match_exact(te, 2048);
         strcpy(exact->header.name, "routing_metadata.node_id");
-        memcpy(exact->bitmap, &node_id, 6);
+        memcpy(exact->bitmap, &node_id, 11); //11es a tablaban az utolso szam
         exact->length = 1*8+0;
 
         a = add_p4_action(h, 2048);
         strcpy(a->description.name, "forward");
 
+	//forward esemeny
         ap = add_p4_action_parameter(h, a, 2048);
         strcpy(ap->name, "new_addr");
         memcpy(ap->bitmap, &new_addr, 6);
@@ -54,9 +56,10 @@ void fill_ipv4_lpm_table(uint8_t new_addr[6], uint8_t node_id)
     	netconv_p4_field_match_exact(exact);
     	netconv_p4_action(a);
     	send_p4_msg(c, buffer, 2048);
+	//definicio vege
 }
 
-void set_default_action_ipv4_lpm()
+void set_default_action_ipv4_lpm() //alapertelmezett esemeny, ne csinaljon semmit pl 22-es id-nal
 {
         char buffer[2048];
         struct p4_header* h;
@@ -90,18 +93,18 @@ int read_config_from_file(char *filename) {
         uint8_t node_id;
 
         printf("READING\n");
-        f = fopen(filename, "r");
+        f = fopen(filename, "r"); //fajl megnyitasa nev alapjan
         if (f == NULL) return -1;
 
         int line_index = 0;
         while (fgets(line, sizeof(line), f)) {
                 line[strlen(line)-1] = '\0';
                 line_index++;
-                printf("Sor: %hhd.\n",line_index);
+                printf("Sor: %hhd.\n",line_index); //soronkent beolvassuk
                 if (10 == sscanf(line, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx %hhd",
                                 &new_addr[0], &new_addr[1], &new_addr[2], &new_addr[3], &new_addr[4], &new_addr[5], &node_id) )
                 {
-                    fill_ipv4_lpm_table(new_addr, node_id);
+                    fill_ipv4_lpm_table(new_addr, node_id); //meghivjuk a felso tablafeltolto fuggvenyt
                 }
                 else {
                     printf("Wrong format error in line\n");
@@ -115,18 +118,18 @@ int read_config_from_file(char *filename) {
 
 char* fn;
 
-void init_file() {
+void init_file() { //ha 1 vagy kevesebb argumentummal hivodott meg a file, ne csinaljon semmit
     set_default_action_ipv4_lpm();
     if (read_config_from_file(fn)<0) {
          printf("File cannnot be opened...\n");
     }
 }
 
-void init_fake() {
+void init_fake() { //ha nem letezik a tabla, legyen default tabla
     uint8_t new_addr[6] = {0xd2, 0x69, 0x0f, 0xa8, 0x39, 0x9c};
     uint8_t node_id = 9;
 
-    fill_ipv4_lpm_table(new_addr, node_id)
+    fill_ipv4_lpm_table(new_addr, node_id) //meghivja a felso tablabeltolto fuggvenyt
 }
 
 int main(int argc, char* argv[])
@@ -155,4 +158,3 @@ int main(int argc, char* argv[])
 
         return 0;
 }
-
