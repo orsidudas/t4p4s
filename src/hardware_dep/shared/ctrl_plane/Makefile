@@ -21,6 +21,9 @@ dpdk_l3fwd_controller: handlers.c controller.c messages.c sock_helpers.c threadp
 dpdk_smgw_controller: handlers.c controller.c messages.c sock_helpers.c threadpool.c fifo.c dpdk_smgw_controller.c
 	$(CC) $(CFLAGS) $(LIB) handlers.c controller.c messages.c sock_helpers.c threadpool.c fifo.c dpdk_smgw_controller.c -o dpdk_smgw_controller
 
+dpdk_basic_controller: handlers.c controller.c messages.c sock_helpers.c threadpool.c fifo.c dpdk_basic_controller.c
+	$(CC) $(CFLAGS) $(LIB) handlers.c controller.c messages.c sock_helpers.c threadpool.c fifo.c dpdk_basic_controller.c -o dpdk_basic_controller
+
 clean:
 	rm -f dpdk_portfwd_controller dpdk_l2fwd_controller dpdk_l3fwd_controller dpdk_smgw_controller
 
