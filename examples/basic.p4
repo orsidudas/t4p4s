@@ -63,8 +63,8 @@ parser MyParser(packet_in packet,
     }
 
     state parse_ethernet {
-        packet.extract(hdr.ethernet);
-	meta.routing_metadata.node_id=1;
+        packet.extract(hdr.ethernet); //kiolvas n bitet es abbol x destaddr lesz, srcaddr es az ethernet tipus, ha kiolvasta, nem olvas tovabb/ van-e eleg bit a csomagban amit kapott
+	meta.routing_metadata.node_id=11;
         transition accept;
     }
 
@@ -83,19 +83,19 @@ control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
 **************  I N G R E S S   P R O C E S S I N G   *******************
 *************************************************************************/
 
-control MyIngress(inout headers hdr,
+control MyIngress(inout headers hdr, //actionokat definialunk
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
-    @name(".nop") action nop() {    
+    @name(".nop") action nop() {     //nem csinalunk semmit
     }
     
-    @name(".forward") action forward(bit<48> new_addr) {
+    @name(".forward") action forward(bit<48> new_addr) { //uj cimet adunk a destAddrnek
 	hdr.ethernet.dstAddr = new_addr;
     }
     
     @name (".ipv4_lpm") table ipv4_lpm {
         key = {
-            meta.routing_metadata.node_id: exact;
+            meta.routing_metadata.node_id: exact; // tabla definialasa, h melyik kulcs alapjan milyen actiont hasznalhat
         }
         actions = {
 	    nop;
@@ -135,7 +135,7 @@ control MyComputeChecksum(inout headers  hdr, inout metadata meta) {
 
 control MyDeparser(packet_out packet, in headers hdr) {
     apply {
-        packet.emit(hdr.ethernet);
+        packet.emit(hdr.ethernet); //miutan vegrehajtottam az esemenyt ujra package lesz belole
     }
 }
 
